@@ -1,0 +1,26 @@
+
+.wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.deleteBtn {
+    display: block;
+    align-self: center;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    text-align: center;
+    border-radius: 4px;
+    color: rgba(0, 0, 0, 0.6); 
+    border: none;
+    padding:2px 10px;
+    height: 30px;
+    min-width: 80px;
+    background-color: rgba(250, 198, 26, 0.63);
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.274);
+    cursor: pointer;
+}
