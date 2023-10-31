@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
 import { ContactForm } from './ContactForm/ContactForm';
 import { ContactList } from './ContactList/ContactList';
@@ -7,42 +7,32 @@ import { Section } from './Section/Section';
 import { Container } from './Container/Container';
 import { Notification } from './Notification/Notification';
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
-
-  componentDidMount() {
+export const App = () => {
+  //При ініціалізації стейту те що поверне callback функція з useState(()=>{parsedContacts}) запишеться в масив contacts
+  const [contacts, setContacts] = useState(() => {
     const stringifiedContacts = localStorage.getItem('contacts');
     const parsedContacts = JSON.parse(stringifiedContacts) ?? [];
 
-    this.setState({ contacts: parsedContacts });
-  }
+    return parsedContacts;
+  });
 
-  // Синхронізація з локальним сховищем при оновленні масиву даних
+  const [filter, setFilter] = useState('');
 
-  componentDidUpdate(_, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      const stringifiedContacts = JSON.stringify(this.state.contacts);
-
-      localStorage.setItem('contacts', stringifiedContacts);
-    }
-  }
+  useEffect(() => {
+    // Синхронізація стейту з локальним сховищем при оновленні масиву даних (стейту contacts)
+    // цю перевірку реакт робить самостійно під капотом - if (prevState.contacts !== this.state.contacts)
+    const stringifiedContacts = JSON.stringify(contacts);
+    localStorage.setItem('contacts', stringifiedContacts);
+  }, [contacts]);
 
   // Форма віддає свій state через props onSubmitForm в компоненті, щоб при сабміті віддати в апп тільки свої дані.
-
-  addContactOnSubmit = inputContact => {
-    const { contacts } = this.state;
+  const addContactOnSubmit = inputContact => {
+    // перевірка на дублікат імені, чи імя яке хочемо додати співпадає з тим яке вже є
     const isExist = contacts.some(
       ({ name }) => name.toLowerCase() === inputContact.name.toLowerCase()
     );
 
+    // якщо хоч один елемент співпаде то в isExist буде true
     if (isExist) {
       alert(`${inputContact.name} is already in contacts.`);
       return;
@@ -53,17 +43,15 @@ export class App extends Component {
       id: nanoid(),
     };
 
-    this.setState(({ contacts }) => ({
-      contacts: [...contacts, finalInputContact],
-    }));
+    // Оновлюємо масив contacts, встановлюємо новий масив куди копіюємо всі з-ня з попереднього і додамо новий обєкт з новими контактами
+    setContacts(prevContacts => [finalInputContact, ...prevContacts]);
   };
 
-  onChangeFilter = event => {
-    this.setState({ filter: event.currentTarget.value });
+  const onChangeFilter = event => {
+    setFilter({ filter: event.currentTarget.value });
   };
 
-  getVisibleContacts = () => {
-    const { contacts, filter } = this.state;
+  const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
 
     return contacts.filter(({ name }) =>
@@ -71,38 +59,31 @@ export class App extends Component {
     );
   };
 
-  onDeleteContact = contactId => {
-    this.setState(({ contacts }) => {
-      return {
-        contacts: contacts.filter(({ id }) => id !== contactId),
-      };
-    });
+  const onDeleteContact = contactId => {
+    //В масив контактів записуємо новий масив без видаленого імені
+    setContacts(contacts.filter(({ id }) => id !== contactId));
   };
 
-  render() {
-    const { filter, contacts } = this.state;
+  return (
+    <Container>
+      <Section title="Phonebook">
+        <ContactForm onSubmitForm={addContactOnSubmit} />
+      </Section>
 
-    return (
-      <Container>
-        <Section title="Phonebook">
-          <ContactForm onSubmitForm={this.addContactOnSubmit} />
-        </Section>
+      <Section title="Contacts">
+        {contacts.length > 0 ? (
+          <Filter value={filter} onChangeFilter={onChangeFilter} />
+        ) : (
+          <Notification message="Your phonebook is empty. Please add your contact!" />
+        )}
 
-        <Section title="Contacts">
-          {contacts.length > 0 ? (
-            <Filter value={filter} onChangeFilter={this.onChangeFilter} />
-          ) : (
-            <Notification message="Your phonebook is empty. Please add your contact!" />
-          )}
-
-          {contacts.length > 0 && (
-            <ContactList
-              contacts={this.getVisibleContacts()}
-              onDeleteContact={this.onDeleteContact}
-            />
-          )}
-        </Section>
-      </Container>
-    );
-  }
-}
+        {contacts.length > 0 && (
+          <ContactList
+            contacts={getVisibleContacts()}
+            onDeleteContact={onDeleteContact}
+          />
+        )}
+      </Section>
+    </Container>
+  );
+};
