@@ -5,9 +5,8 @@ export const ContactForm = ({ onSubmitForm }) => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
-  // Патерн 'контрольований компонент' після зміни state
   const handleChange = event => {
-    const { name, value } = event.currentTarget;
+    const { name, value } = event.target;
 
     switch (name) {
       case 'name':
@@ -30,8 +29,6 @@ export const ContactForm = ({ onSubmitForm }) => {
       number,
     };
 
-    // Піднімаємо дані з форми під час сабміту в компонент App
-    // onSubmitForm приходить ззовні як props
     onSubmitForm(inputContact);
     setName('');
     setNumber('');
