@@ -48,7 +48,7 @@ export const App = () => {
   };
 
   const onChangeFilter = event => {
-    setFilter({ filter: event.currentTarget.value });
+    setFilter(event.currentTarget.value);
   };
 
   const getVisibleContacts = () => {
